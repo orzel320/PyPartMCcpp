@@ -552,7 +552,7 @@ endif()
 ### NANOBIND & PyPartMC ############################################################################
 find_package(nanobind CONFIG REQUIRED)
 
-add_subdirectory(gitmodules/nanobind)
+# add_subdirectory(gitmodules/nanobind)
 if(APPLE)
     set(PYPARTMC_MODULE_TYPE SHARED)
 else()
@@ -570,7 +570,8 @@ endif()
 set(PYPARTMC_INCLUDE_DIRS 
   "${CMAKE_BINARY_DIR}/include;"
   "${CMAKE_SOURCE_DIR}/gitmodules/json/include;"
-  "${CMAKE_SOURCE_DIR}/gitmodules/nanobind/include;"
+#   "${CMAKE_SOURCE_DIR}/gitmodules/nanobind/include;"
+  "${NB_DIR}/include;"    
   "${CMAKE_SOURCE_DIR}/gitmodules/nanobind_json/include;"
   "${CMAKE_SOURCE_DIR}/gitmodules/span/include;"
   "${CMAKE_SOURCE_DIR}/gitmodules/string_view-standalone/include;"
@@ -623,6 +624,7 @@ file(GLOB PyPartMC_headers ${CMAKE_SOURCE_DIR}/src/*.hpp)
 if (NOT "${CMAKE_REQUIRED_INCLUDES}" STREQUAL "")
   message("CMAKE_REQUIRED_INCLUDES not empty! (${CMAKE_REQUIRED_INCLUDES})")
 endif()
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY) # change (added)
 foreach(file ${PyPartMC_headers})
   set(CMAKE_REQUIRED_INCLUDES "${PYPARTMC_INCLUDE_DIRS};${Python_INCLUDE_DIRS}")
   set(CMAKE_REQUIRED_FLAGS "${PYPARTMC_WERROR}")
@@ -650,11 +652,16 @@ foreach(file ${PyPartMC_headers})
   endif()
   unset(file_var)
 endforeach()
-
+unset(CMAKE_TRY_COMPILE_TARGET_TYPE) # change (added)
 _install(TARGETS _PyPartMC LIBRARY DESTINATION PyPartMC)
 
 # for C++ users who wish to link against the PyPartMC shared library
-set_target_properties(_PyPartMC PROPERTIES CXX_VISIBILITY_PRESET default C_VISIBILITY_PRESET default)
+# set_target_properties(_PyPartMC PROPERTIES CXX_VISIBILITY_PRESET default C_VISIBILITY_PRESET default)
+foreach(target _PyPartMC nanobind-static nanobind-static-abi3)
+  if(TARGET ${target})
+    set_target_properties(${target} PROPERTIES CXX_VISIBILITY_PRESET default C_VISIBILITY_PRESET default)
+  endif()
+endforeach() #change (substituted for above)
 
 set_target_properties(_PyPartMC PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
